@@ -4,9 +4,20 @@
 
 import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
+import * as $api_auth_login from "./routes/api/auth/login.ts";
+import * as $api_auth_logout from "./routes/api/auth/logout.ts";
+import * as $api_auth_register from "./routes/api/auth/register.ts";
+import * as $api_feeds_id_unsubscribe from "./routes/api/feeds/[id]/unsubscribe.ts";
+import * as $api_feeds_discover from "./routes/api/feeds/discover.ts";
+import * as $api_feeds_subscribe from "./routes/api/feeds/subscribe.ts";
 import * as $api_joke from "./routes/api/joke.ts";
+import * as $article_id_ from "./routes/article/[id].tsx";
+import * as $feeds from "./routes/feeds.tsx";
 import * as $greet_name_ from "./routes/greet/[name].tsx";
 import * as $index from "./routes/index.tsx";
+import * as $login from "./routes/login.tsx";
+import * as $register from "./routes/register.tsx";
+import * as $search from "./routes/search.tsx";
 import * as $Counter from "./islands/Counter.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
@@ -14,9 +25,20 @@ const manifest = {
   routes: {
     "./routes/_404.tsx": $_404,
     "./routes/_app.tsx": $_app,
+    "./routes/api/auth/login.ts": $api_auth_login,
+    "./routes/api/auth/logout.ts": $api_auth_logout,
+    "./routes/api/auth/register.ts": $api_auth_register,
+    "./routes/api/feeds/[id]/unsubscribe.ts": $api_feeds_id_unsubscribe,
+    "./routes/api/feeds/discover.ts": $api_feeds_discover,
+    "./routes/api/feeds/subscribe.ts": $api_feeds_subscribe,
     "./routes/api/joke.ts": $api_joke,
+    "./routes/article/[id].tsx": $article_id_,
+    "./routes/feeds.tsx": $feeds,
     "./routes/greet/[name].tsx": $greet_name_,
     "./routes/index.tsx": $index,
+    "./routes/login.tsx": $login,
+    "./routes/register.tsx": $register,
+    "./routes/search.tsx": $search,
   },
   islands: {
     "./islands/Counter.tsx": $Counter,
