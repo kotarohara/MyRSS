@@ -4,6 +4,9 @@
 
 import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
+import * as $api_articles_id_like from "./routes/api/articles/[id]/like.ts";
+import * as $api_articles_id_replies from "./routes/api/articles/[id]/replies.ts";
+import * as $api_articles_id_retweet from "./routes/api/articles/[id]/retweet.ts";
 import * as $api_auth_login from "./routes/api/auth/login.ts";
 import * as $api_auth_logout from "./routes/api/auth/logout.ts";
 import * as $api_auth_register from "./routes/api/auth/register.ts";
@@ -11,20 +14,32 @@ import * as $api_feeds_id_unsubscribe from "./routes/api/feeds/[id]/unsubscribe.
 import * as $api_feeds_discover from "./routes/api/feeds/discover.ts";
 import * as $api_feeds_subscribe from "./routes/api/feeds/subscribe.ts";
 import * as $api_joke from "./routes/api/joke.ts";
+import * as $api_recommendations from "./routes/api/recommendations.ts";
+import * as $api_users_id_follow from "./routes/api/users/[id]/follow.ts";
 import * as $article_id_ from "./routes/article/[id].tsx";
 import * as $feeds from "./routes/feeds.tsx";
 import * as $greet_name_ from "./routes/greet/[name].tsx";
 import * as $index from "./routes/index.tsx";
 import * as $login from "./routes/login.tsx";
+import * as $recommendations from "./routes/recommendations.tsx";
 import * as $register from "./routes/register.tsx";
 import * as $search from "./routes/search.tsx";
+import * as $social from "./routes/social.tsx";
+import * as $users from "./routes/users.tsx";
 import * as $Counter from "./islands/Counter.tsx";
+import * as $FollowButton from "./islands/FollowButton.tsx";
+import * as $LikeButton from "./islands/LikeButton.tsx";
+import * as $ReplySection from "./islands/ReplySection.tsx";
+import * as $RetweetButton from "./islands/RetweetButton.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
     "./routes/_404.tsx": $_404,
     "./routes/_app.tsx": $_app,
+    "./routes/api/articles/[id]/like.ts": $api_articles_id_like,
+    "./routes/api/articles/[id]/replies.ts": $api_articles_id_replies,
+    "./routes/api/articles/[id]/retweet.ts": $api_articles_id_retweet,
     "./routes/api/auth/login.ts": $api_auth_login,
     "./routes/api/auth/logout.ts": $api_auth_logout,
     "./routes/api/auth/register.ts": $api_auth_register,
@@ -32,16 +47,25 @@ const manifest = {
     "./routes/api/feeds/discover.ts": $api_feeds_discover,
     "./routes/api/feeds/subscribe.ts": $api_feeds_subscribe,
     "./routes/api/joke.ts": $api_joke,
+    "./routes/api/recommendations.ts": $api_recommendations,
+    "./routes/api/users/[id]/follow.ts": $api_users_id_follow,
     "./routes/article/[id].tsx": $article_id_,
     "./routes/feeds.tsx": $feeds,
     "./routes/greet/[name].tsx": $greet_name_,
     "./routes/index.tsx": $index,
     "./routes/login.tsx": $login,
+    "./routes/recommendations.tsx": $recommendations,
     "./routes/register.tsx": $register,
     "./routes/search.tsx": $search,
+    "./routes/social.tsx": $social,
+    "./routes/users.tsx": $users,
   },
   islands: {
     "./islands/Counter.tsx": $Counter,
+    "./islands/FollowButton.tsx": $FollowButton,
+    "./islands/LikeButton.tsx": $LikeButton,
+    "./islands/ReplySection.tsx": $ReplySection,
+    "./islands/RetweetButton.tsx": $RetweetButton,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

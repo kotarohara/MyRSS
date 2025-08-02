@@ -1,11 +1,26 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { Article, db, Feed } from "../../db.ts";
 import { authService, getSessionCookie } from "../../utils/auth.ts";
+import LikeButton from "../../islands/LikeButton.tsx";
+import RetweetButton from "../../islands/RetweetButton.tsx";
+import ReplySection from "../../islands/ReplySection.tsx";
 
 interface ArticlePageData {
   user: { id: string; username: string; email: string };
   article: Article;
   feed: Feed;
+  likeCount: number;
+  retweetCount: number;
+  replyCount: number;
+  userLiked: boolean;
+  userRetweeted: boolean;
+  replies: Array<{
+    id: string;
+    userId: string;
+    content: string;
+    createdAt: string;
+    username: string;
+  }>;
 }
 
 export const handler: Handlers<ArticlePageData> = {
@@ -48,10 +63,48 @@ export const handler: Handlers<ArticlePageData> = {
       });
     }
 
+    // Get social data
+    const [likes, retweets, replies, userLike, userRetweet] = await Promise.all(
+      [
+        db.getArticleLikes(article.id),
+        db.getArticleRetweets(article.id),
+        db.getArticleReplies(article.id),
+        db.getUserLike(user.id, article.id),
+        db.getUserRetweet(user.id, article.id),
+      ],
+    );
+
+    // Track reading history
+    await db.addReadHistory({
+      userId: user.id,
+      articleId: article.id,
+      readAt: new Date(),
+    });
+
+    // Get user info for replies
+    const repliesWithUsers = await Promise.all(
+      replies.map(async (reply) => {
+        const replyUser = await db.getUserById(reply.userId);
+        return {
+          id: reply.id,
+          userId: reply.userId,
+          content: reply.content,
+          createdAt: reply.createdAt.toISOString(),
+          username: replyUser?.username || "Unknown",
+        };
+      }),
+    );
+
     return ctx.render({
       user: { id: user.id, username: user.username, email: user.email },
       article,
       feed,
+      likeCount: likes.length,
+      retweetCount: retweets.length,
+      replyCount: replies.length,
+      userLiked: !!userLike,
+      userRetweeted: !!userRetweet,
+      replies: repliesWithUsers,
     });
   },
 };
@@ -96,12 +149,12 @@ export default function ArticlePage({ data }: PageProps<ArticlePageData>) {
               >
                 Manage Feeds
               </a>
-              <a
-                href="/api/auth/logout"
-                class="text-sm text-gray-500 hover:text-gray-700"
+              <button
+                onclick="handleLogout()"
+                class="text-sm text-gray-500 hover:text-gray-700 bg-transparent border-none cursor-pointer"
               >
                 Logout
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -221,27 +274,30 @@ export default function ArticlePage({ data }: PageProps<ArticlePageData>) {
                 : <p class="text-gray-500 italic">No content available</p>}
             </div>
 
-            {/* Article Footer */}
+            {/* Social Actions */}
             <div class="border-t border-gray-200 pt-6 mt-8">
-              <div class="flex items-center justify-between">
-                <div class="text-sm text-gray-500">
-                  Article ID: {data.article.id}
-                </div>
-                <div class="flex items-center space-x-4">
-                  <button
-                    type="button"
-                    class="text-sm text-gray-500 hover:text-gray-700"
-                  >
-                    Share
-                  </button>
-                  <button
-                    type="button"
-                    class="text-sm text-gray-500 hover:text-gray-700"
-                  >
-                    Bookmark
-                  </button>
-                </div>
+              <div class="flex items-center space-x-8 mb-6">
+                <LikeButton
+                  articleId={data.article.id}
+                  initialLiked={data.userLiked}
+                  initialCount={data.likeCount}
+                  userId={data.user.id}
+                />
+                <RetweetButton
+                  articleId={data.article.id}
+                  initialRetweeted={data.userRetweeted}
+                  initialCount={data.retweetCount}
+                  userId={data.user.id}
+                />
               </div>
+
+              {/* Replies Section */}
+              <ReplySection
+                articleId={data.article.id}
+                initialReplies={data.replies}
+                initialCount={data.replyCount}
+                userId={data.user.id}
+              />
             </div>
           </div>
         </article>
@@ -267,6 +323,31 @@ export default function ArticlePage({ data }: PageProps<ArticlePageData>) {
           </a>
         </div>
       </div>
+
+      <script>
+        {`
+          async function handleLogout() {
+            try {
+              const response = await fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
+              
+              if (response.ok) {
+                window.location.href = '/login';
+              } else {
+                console.error('Logout failed');
+                alert('Logout failed. Please try again.');
+              }
+            } catch (error) {
+              console.error('Network error during logout:', error);
+              alert('Network error. Please try again.');
+            }
+          }
+        `}
+      </script>
     </div>
   );
 }

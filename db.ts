@@ -57,6 +57,18 @@ export interface Reply {
   createdAt: Date;
 }
 
+export interface Follow {
+  followerId: string;
+  followingId: string;
+  createdAt: Date;
+}
+
+export interface ReadHistory {
+  userId: string;
+  articleId: string;
+  readAt: Date;
+}
+
 export class Database {
   public kv: Deno.Kv;
 
@@ -299,6 +311,130 @@ export class Database {
   async updateFeed(feed: Feed): Promise<void> {
     await this.kv.set(["feed", feed.id], feed);
     await this.kv.set(["feed_by_url", feed.url], feed);
+  }
+
+  async createFollow(follow: Follow): Promise<void> {
+    await this.kv.set(
+      ["follow", follow.followerId, follow.followingId],
+      follow,
+    );
+    await this.kv.set(
+      ["followers", follow.followingId, follow.followerId],
+      follow,
+    );
+    await this.kv.set(
+      ["following", follow.followerId, follow.followingId],
+      follow,
+    );
+  }
+
+  async deleteFollow(followerId: string, followingId: string): Promise<void> {
+    await this.kv.delete(["follow", followerId, followingId]);
+    await this.kv.delete(["followers", followingId, followerId]);
+    await this.kv.delete(["following", followerId, followingId]);
+  }
+
+  async getFollow(
+    followerId: string,
+    followingId: string,
+  ): Promise<Follow | null> {
+    const result = await this.kv.get<Follow>([
+      "follow",
+      followerId,
+      followingId,
+    ]);
+    return result.value;
+  }
+
+  async getUserFollowers(userId: string): Promise<Follow[]> {
+    const followers: Follow[] = [];
+    const iter = this.kv.list<Follow>({ prefix: ["followers", userId] });
+
+    for await (const { value } of iter) {
+      followers.push(value);
+    }
+
+    return followers;
+  }
+
+  async getUserFollowing(userId: string): Promise<Follow[]> {
+    const following: Follow[] = [];
+    const iter = this.kv.list<Follow>({ prefix: ["following", userId] });
+
+    for await (const { value } of iter) {
+      following.push(value);
+    }
+
+    return following;
+  }
+
+  async getAllArticles(): Promise<Article[]> {
+    const articles: Article[] = [];
+    const iter = this.kv.list<Article>({ prefix: ["article"] });
+
+    for await (const { value } of iter) {
+      if (value && typeof value === "object" && "id" in value) {
+        articles.push(value as Article);
+      }
+    }
+
+    return articles.sort((a, b) =>
+      b.publishedAt.getTime() - a.publishedAt.getTime()
+    );
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    const users: User[] = [];
+    const iter = this.kv.list<User>({ prefix: ["user"] });
+
+    for await (const { value } of iter) {
+      if (
+        value && typeof value === "object" && "id" in value &&
+        "username" in value
+      ) {
+        users.push(value as User);
+      }
+    }
+
+    return users;
+  }
+
+  async addReadHistory(readHistory: ReadHistory): Promise<void> {
+    await this.kv.set([
+      "read_history",
+      readHistory.userId,
+      readHistory.articleId,
+    ], readHistory);
+    await this.kv.set([
+      "user_read_history",
+      readHistory.userId,
+      readHistory.readAt.getTime(),
+    ], readHistory);
+  }
+
+  async getUserReadHistory(userId: string): Promise<ReadHistory[]> {
+    const history: ReadHistory[] = [];
+    const iter = this.kv.list<ReadHistory>({
+      prefix: ["user_read_history", userId],
+    });
+
+    for await (const { value } of iter) {
+      history.push(value);
+    }
+
+    return history.sort((a, b) => b.readAt.getTime() - a.readAt.getTime());
+  }
+
+  async hasUserReadArticle(
+    userId: string,
+    articleId: string,
+  ): Promise<boolean> {
+    const result = await this.kv.get<ReadHistory>([
+      "read_history",
+      userId,
+      articleId,
+    ]);
+    return !!result.value;
   }
 }
 

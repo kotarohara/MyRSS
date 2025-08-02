@@ -101,12 +101,12 @@ export default function SearchPage({ data }: PageProps<SearchPageData>) {
               >
                 Manage Feeds
               </a>
-              <a
-                href="/api/auth/logout"
-                class="text-sm text-gray-500 hover:text-gray-700"
+              <button
+                onclick="handleLogout()"
+                class="text-sm text-gray-500 hover:text-gray-700 bg-transparent border-none cursor-pointer"
               >
                 Logout
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -244,6 +244,31 @@ export default function SearchPage({ data }: PageProps<SearchPageData>) {
           </a>
         </div>
       </div>
+
+      <script>
+        {`
+          async function handleLogout() {
+            try {
+              const response = await fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
+              
+              if (response.ok) {
+                window.location.href = '/login';
+              } else {
+                console.error('Logout failed');
+                alert('Logout failed. Please try again.');
+              }
+            } catch (error) {
+              console.error('Network error during logout:', error);
+              alert('Network error. Please try again.');
+            }
+          }
+        `}
+      </script>
     </div>
   );
 }

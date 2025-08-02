@@ -1,12 +1,19 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { Article, db, Feed } from "../db.ts";
 import { authService, getSessionCookie } from "../utils/auth.ts";
-import ArticleCard from "../components/ArticleCard.tsx";
+import SocialArticleCard from "../components/SocialArticleCard.tsx";
 
 interface DashboardData {
   user: { id: string; username: string; email: string };
   userFeeds: Feed[];
-  articles: (Article & { feedTitle: string })[];
+  articles: (Article & {
+    feedTitle: string;
+    likeCount: number;
+    retweetCount: number;
+    replyCount: number;
+    userLiked: boolean;
+    userRetweeted: boolean;
+  })[];
   totalArticles: number;
 }
 
@@ -30,7 +37,14 @@ export const handler: Handlers<DashboardData> = {
 
     const subscriptions = await db.getUserSubscriptions(user.id);
     const userFeeds: Feed[] = [];
-    const articles: (Article & { feedTitle: string })[] = [];
+    const articles: (Article & {
+      feedTitle: string;
+      likeCount: number;
+      retweetCount: number;
+      replyCount: number;
+      userLiked: boolean;
+      userRetweeted: boolean;
+    })[] = [];
 
     for (const subscription of subscriptions) {
       const feed = await db.getFeedById(subscription.feedId);
@@ -38,7 +52,25 @@ export const handler: Handlers<DashboardData> = {
         userFeeds.push(feed);
         const feedArticles = await db.getArticlesByFeedId(feed.id);
         for (const article of feedArticles) {
-          articles.push({ ...article, feedTitle: feed.title });
+          // Get social data for each article
+          const [likes, retweets, replies, userLike, userRetweet] =
+            await Promise.all([
+              db.getArticleLikes(article.id),
+              db.getArticleRetweets(article.id),
+              db.getArticleReplies(article.id),
+              db.getUserLike(user.id, article.id),
+              db.getUserRetweet(user.id, article.id),
+            ]);
+
+          articles.push({
+            ...article,
+            feedTitle: feed.title,
+            likeCount: likes.length,
+            retweetCount: retweets.length,
+            replyCount: replies.length,
+            userLiked: !!userLike,
+            userRetweeted: !!userRetweet,
+          });
         }
       }
     }
@@ -68,28 +100,39 @@ export default function Dashboard({ data }: PageProps<DashboardData>) {
             <div class="flex items-center">
               <h1 class="text-2xl font-bold text-gray-900">RSS Reader</h1>
             </div>
+            <div class="flex items-center space-x-8">
+              <nav class="flex space-x-4">
+                <a href="/" class="text-indigo-600 font-medium">Home</a>
+                <a href="/social" class="text-gray-500 hover:text-gray-700">
+                  Social
+                </a>
+                <a
+                  href="/recommendations"
+                  class="text-gray-500 hover:text-gray-700"
+                >
+                  Recommendations
+                </a>
+                <a href="/feeds" class="text-gray-500 hover:text-gray-700">
+                  Feeds
+                </a>
+                <a href="/users" class="text-gray-500 hover:text-gray-700">
+                  Users
+                </a>
+                <a href="/search" class="text-gray-500 hover:text-gray-700">
+                  Search
+                </a>
+              </nav>
+            </div>
             <div class="flex items-center space-x-4">
               <span class="text-sm text-gray-500">
                 Hello, {data.user.username}
               </span>
-              <a
-                href="/search"
-                class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Search
-              </a>
-              <a
-                href="/feeds"
-                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Manage Feeds
-              </a>
-              <a
-                href="/api/auth/logout"
-                class="text-sm text-gray-500 hover:text-gray-700"
+              <button
+                onclick="handleLogout()"
+                class="text-sm text-gray-500 hover:text-gray-700 bg-transparent border-none cursor-pointer"
               >
                 Logout
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -188,7 +231,16 @@ export default function Dashboard({ data }: PageProps<DashboardData>) {
                   : (
                     <div class="space-y-6">
                       {data.articles.map((article) => (
-                        <ArticleCard key={article.id} article={article} />
+                        <SocialArticleCard
+                          key={article.id}
+                          article={article}
+                          userId={data.user.id}
+                          likeCount={article.likeCount}
+                          retweetCount={article.retweetCount}
+                          replyCount={article.replyCount}
+                          userLiked={article.userLiked}
+                          userRetweeted={article.userRetweeted}
+                        />
                       ))}
                     </div>
                   )}
@@ -197,6 +249,31 @@ export default function Dashboard({ data }: PageProps<DashboardData>) {
           </div>
         </div>
       </div>
+
+      <script>
+        {`
+          async function handleLogout() {
+            try {
+              const response = await fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
+              
+              if (response.ok) {
+                window.location.href = '/login';
+              } else {
+                console.error('Logout failed');
+                alert('Logout failed. Please try again.');
+              }
+            } catch (error) {
+              console.error('Network error during logout:', error);
+              alert('Network error. Please try again.');
+            }
+          }
+        `}
+      </script>
     </div>
   );
 }

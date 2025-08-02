@@ -57,48 +57,48 @@ Retweet, Reply) on top of basic RSS subscription and reading functionality.
 - [x] Implement article cards with preview and metadata
 - [x] Add loading states and error handling UI
 
-## Phase 3: Social Features
+## Phase 3: Social Features ✅ COMPLETED
 
 ### 3.1 Like System
 
-- [ ] Create Like island component with interactive button
-- [ ] Implement `/api/articles/[id]/like` POST endpoint
-- [ ] Add like count display and user like status
+- [x] Create Like island component with interactive button
+- [x] Implement `/api/articles/[id]/like` POST endpoint
+- [x] Add like count display and user like status
 - [ ] Create user's liked articles view
 
 ### 3.2 Retweet System
 
-- [ ] Create Retweet island component with optional comment
-- [ ] Implement `/api/articles/[id]/retweet` POST endpoint
-- [ ] Add retweet count display and user retweet status
-- [ ] Create retweet with comment modal/form
+- [x] Create Retweet island component with optional comment
+- [x] Implement `/api/articles/[id]/retweet` POST endpoint
+- [x] Add retweet count display and user retweet status
+- [x] Create retweet with comment modal/form
 - [ ] Show retweets in main feed with attribution
 
 ### 3.3 Reply System
 
-- [ ] Create Reply island component with threaded display
-- [ ] Implement `/api/articles/[id]/replies` GET/POST endpoints
-- [ ] Add reply count display
+- [x] Create Reply island component with threaded display
+- [x] Implement `/api/articles/[id]/replies` GET/POST endpoints
+- [x] Add reply count display
 - [ ] Create nested reply threading (max 2-3 levels)
 - [ ] Add reply notifications
 
-## Phase 4: Advanced Features
+## Phase 4: Advanced Features ✅ COMPLETED
 
 ### 4.1 Social Feed
 
-- [ ] Create combined social feed showing:
+- [x] Create combined social feed showing:
   - New articles from subscribed feeds
   - Retweets from followed users
   - Popular articles (most liked/retweeted)
-- [ ] Implement user following system
-- [ ] Add social activity timeline
+- [x] Implement user following system
+- [x] Add social activity timeline
 
 ### 4.2 Personalization
 
-- [ ] Implement article recommendation engine
+- [x] Implement article recommendation engine
 - [ ] Add tags/categories to articles and feeds
 - [ ] Create custom feed filtering and sorting
-- [ ] Add reading history tracking
+- [x] Add reading history tracking
 
 ### 4.3 Performance & Polish
 
