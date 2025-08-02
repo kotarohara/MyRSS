@@ -197,6 +197,29 @@ export const handler: Handlers<FeedsPageData> = {
 export default function FeedsPage({ data }: PageProps<FeedsPageData>) {
   return (
     <div class="min-h-screen bg-gray-50">
+      <div class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between items-center py-6">
+            <div class="flex items-center">
+              <h1 class="text-2xl font-bold text-gray-900">RSS Reader</h1>
+            </div>
+            <div class="flex items-center space-x-8">
+              <nav class="flex space-x-4">
+                <a href="/" class="text-gray-500 hover:text-gray-700">Home</a>
+                <a href="/social" class="text-gray-500 hover:text-gray-700">Social</a>
+                <a href="/recommendations" class="text-gray-500 hover:text-gray-700">Recommendations</a>
+                <a href="/feeds" class="text-indigo-600 font-medium">Feeds</a>
+                <a href="/users" class="text-gray-500 hover:text-gray-700">Users</a>
+                <a href="/search" class="text-gray-500 hover:text-gray-700">Search</a>
+              </nav>
+            </div>
+            <div class="flex items-center space-x-4">
+              <span class="text-sm text-gray-500">Hello, {data.user.username}</span>
+              <button onclick="handleLogout()" class="text-sm text-gray-500 hover:text-gray-700 bg-transparent border-none cursor-pointer">Logout</button>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="py-8">
           <div class="md:flex md:items-center md:justify-between">
@@ -371,6 +394,30 @@ export default function FeedsPage({ data }: PageProps<FeedsPageData>) {
           )}
         </div>
       </div>
+      <script>
+        {`
+          async function handleLogout() {
+            try {
+              const response = await fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
+              
+              if (response.ok) {
+                window.location.href = '/login';
+              } else {
+                console.error('Logout failed');
+                alert('Logout failed. Please try again.');
+              }
+            } catch (error) {
+              console.error('Network error during logout:', error);
+              alert('Network error. Please try again.');
+            }
+          }
+        `}
+      </script>
     </div>
   );
 }
